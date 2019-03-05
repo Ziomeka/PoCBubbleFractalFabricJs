@@ -7,11 +7,12 @@
     <title>Fabric.js - Bubles</title>
     <style>
         html, body {width: 100%; height: 100%; margin: 0;}
+        #c {position: fixed; top: 0; left: 0; width: 100vw; height: 100vh}
     </style>
 </head>
 
 <body>
-    <svg class="chart"></svg>
+    <canvas id='c'></canvas>
     <script src="js/fabric.min.js"></script>
 
     <script>
@@ -90,6 +91,8 @@
             let curentElement = 0;
             let changeMarker = false;
 
+            let canvas = new fabric.Canvas('c', {width: width, height: height, backgroundColor: '#fff'});
+
             const setCurrentElement = (index) => {
                 if (index !== curentElement) {
                     curentElement = index;
@@ -103,29 +106,66 @@
             }
 
             const addActiveElement = (element) => {
-
+                let activeCircle = new fabric.Circle({
+                    radius: ACTIVE_CIRCLE_RADIUS,
+                    fill: element.color,
+                    left: -900,
+                    top: height / 2,
+                    originX: 'center',
+                    originY: 'center',
+                    hasControls: false,
+                    hasBorders: false,
+                    lockMovementX: true,
+                    lockMovementY: true
+                });
+                canvas.add(activeCircle);
+                activeCircle.on('selected', function() {
+                    setCurrentElement(element.id);
+                    redraw();
+                });
             }
 
             const childPosition = (index, radius, step, offset) => {
                 let theta = Math.PI / 2 - index * step * Math.PI / 180 - offset * Math.PI / 180;
                 return {
-                    x: radius * Math.sin(theta),
+                    x: radius * Math.sin(theta) - 900,
                     y: radius * Math.cos(theta)
                 }
             }
 
             let childElements = [];
             const addChildElement = (element, index) => {
-
+                let position = childPosition(index, CHILD_CIRCLE_POSITION_RADIUS, CHILDREN_DISTANCE_IN_ANGLE, CHILDREN_START_POSITION_ANGLE);
+                let childCircle = new fabric.Circle({
+                    radius: CHILD_CIRCLE_RADIUS,
+                    fill: element.color,
+                    left: position.x,
+                    top: height / 2 + position.y ,
+                    originX: 'center',
+                    originY: 'center',
+                    hasControls: false,
+                    hasBorders: false,
+                    lockMovementX: true,
+                    lockMovementY: true
+                });
+                canvas.add(childCircle);
+                childCircle.on('selected', function() {
+                    setCurrentElement(element.id);
+                    redraw();
+                });
             }
 
             const setScene = (element) => {
-
+                addActiveElement(element);
+                element.children.forEach((child, index) => {
+                    addChildElement(data[child], index);
+                });
+                changeMarker = false;
             };
 
             const redraw = () => {
                 window.scrollTo(0, 0);
-
+                canvas.clear();
                 setScene(data[curentElement]);
             }
 
@@ -137,8 +177,7 @@
 
             let currentCameraAngle = 0;
             setScene(data[0]);
-            window.addEventListener('scroll', moveOnScroll);
-
+            // window.addEventListener('scroll', moveOnScroll);
         });
     </script>
 </body>
