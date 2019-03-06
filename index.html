@@ -7,12 +7,14 @@
     <title>Fabric.js - Bubles</title>
     <style>
         html, body {width: 100%; height: 100%; margin: 0;}
-        #c {position: fixed; top: 0; left: 0; width: 100vw; height: 100vh}
+        .page {position: fixed; top: 0; left: 0; width: 100vw; height: 100vh}
     </style>
 </head>
 
 <body>
-    <canvas id='c'></canvas>
+    <div class="page">
+        <canvas id='c'></canvas>
+    </div>
     <script src="js/fabric.min.js"></script>
     <script src="js/data.js"></script>
 
@@ -93,7 +95,7 @@
                 return {
                     x: radius * Math.cos(theta) + offsetX,
                     y: radius * Math.sin(theta) + offsetY,
-                    angle: theta
+                    angle: angle
                 }
             }
 
@@ -113,7 +115,14 @@
 
             let curentElement = 0;
 
-            let canvas = new fabric.Canvas('c', {width: width, height: height, backgroundColor: '#fff'});
+            let canvas = new fabric.Canvas('c', {
+                width: width,
+                height: height,
+                backgroundColor: '#fff',
+                allowTouchScrolling: true,
+                selection: false,
+                controlsAboveOverlay: true,
+            });
 
             const setCurrentElement = (index) => {
                 if (index !== curentElement) {
@@ -139,7 +148,7 @@
                     lockMovementY: true
                 });
                 canvas.add(activeCircle);
-                activeCircle.on('selected', function() {
+                activeCircle.on('mouseup', function() {
                     setCurrentElement(element.id);
                     redraw();
                 });
@@ -150,44 +159,66 @@
                 let childCircle = new fabric.Circle({
                     radius: CHILD_CIRCLE_RADIUS,
                     fill: element.color,
-                    left: childrensStartPositions[index].x,
-                    top: height / 2 + childrensStartPositions[index].y ,
+                    originX: 'center',
+                    originY: 'center',
+                });
+                let childText = new fabric.Text(element.text, {
+                    fontSize: FONT_SIZE,
+                    textAlign: 'center',
+                    originX: 'center',
+                    originY: 'center'
+                });
+                let childElement = new fabric.Group([childCircle, childText], {
                     originX: 'center',
                     originY: 'center',
                     hasControls: false,
                     hasBorders: false,
                     lockMovementX: true,
-                    lockMovementY: true
+                    lockMovementY: true,
+                    left: childrensStartPositions[index].x,
+                    top: height / 2 + childrensStartPositions[index].y ,
                 });
-                canvas.add(childCircle);
-                childCircle.on('selected', function() {
+
+                canvas.add(childElement);
+                childElements.push(childElement);
+                childElement.on('mouseup', function() {
                     setCurrentElement(element.id);
                     redraw();
                 });
             }
 
             const setScene = (element) => {
+                let pageWidth = `${PAGE_HEIGHT_PER_CHILD * element.children.length + 2 * GAP_HEIGHT}px`
+                document.querySelector('body').style.height = pageWidth;
                 addActiveElement(element);
                 element.children.forEach((child, index) => {
                     addChildElement(data[child], index);
                 });
+                canvas.renderAll();
             };
 
             const redraw = () => {
                 window.scrollTo(0, 0);
                 canvas.clear();
+                childElements = [];
                 setScene(data[curentElement]);
             }
 
             let moveOnScroll = () => {
                 let scrollPosition = window.scrollY || document.documentElement.scrollTop;
                 currentCameraAngle = -scrollPosition / (PAGE_HEIGHT_PER_CHILD / CHILDREN_DISTANCE_IN_ANGLE);
-
+                childElements.forEach((child, index) => {
+                    let posiition = fromSphericToCartesian(CHILD_CIRCLE_POSITION_RADIUS, childrensStartPositions[index].angle + currentCameraAngle, ACTIVE_CIRCLE_OFFSET_X, 0);
+                    child.left = posiition.x;
+                    child.top = height/2 + posiition.y;
+                    if (child.top < height) child.scale(1);
+                });
+                canvas.renderAll();
             }
 
             let currentCameraAngle = 0;
             setScene(data[0]);
-            // window.addEventListener('scroll', moveOnScroll);
+            window.addEventListener('scroll', moveOnScroll);
         });
     </script>
 </body>
