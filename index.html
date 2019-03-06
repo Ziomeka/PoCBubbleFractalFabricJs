@@ -112,17 +112,14 @@
             height = window.innerHeight;
 
             let curentElement = 0;
-            let changeMarker = false;
 
             let canvas = new fabric.Canvas('c', {width: width, height: height, backgroundColor: '#fff'});
 
             const setCurrentElement = (index) => {
                 if (index !== curentElement) {
                     curentElement = index;
-                    changeMarker = true;
                 } else if (curentElement !== 0){
                     curentElement = data[curentElement].parent;
-                    changeMarker = true;
                 } else {
                     curentElement = 0;
                 }
@@ -174,7 +171,6 @@
                 element.children.forEach((child, index) => {
                     addChildElement(data[child], index);
                 });
-                changeMarker = false;
             };
 
             const redraw = () => {
