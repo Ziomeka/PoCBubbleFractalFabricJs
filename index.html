@@ -120,10 +120,12 @@
                 width: width,
                 height: height,
                 backgroundColor: '#fff',
-                allowTouchScrolling: true,
-                selection: false,
+                allowTouchScrolling: false,
+                selection: true,
                 controlsAboveOverlay: true,
             });
+
+            let clickAviable = true;
 
             const setCurrentElement = (index) => {
                 if (index !== curentElement) {
@@ -150,8 +152,12 @@
                 });
                 canvas.add(activeCircle);
                 activeCircle.on('mouseup', function() {
-                    setCurrentElement(element.id);
-                    redraw();
+                    if (clickAviable) {
+                        setCurrentElement(element.id);
+                        redraw();
+                    } else {
+                        clickAviable = true;
+                    }
                 });
             }
 
@@ -183,8 +189,12 @@
                 canvas.add(childElement);
                 childElements.push(childElement);
                 childElement.on('mouseup', function() {
-                    setCurrentElement(element.id);
-                    redraw();
+                    if (clickAviable) {
+                        setCurrentElement(element.id);
+                        redraw();
+                    } else {
+                        clickAviable = true;
+                    }
                 });
             }
 
@@ -236,12 +246,12 @@
             let hammertime = new Hammer(touchMe);
             hammertime.get('pan').set({ direction: Hammer.DIRECTION_VERTICAL, threshold: 50 });
             hammertime.on('panend', function(ev) {
-                console.log(ev);
                 if (ev.deltaY > 0) {
                     skipCircle('down');
                 } else if (ev.deltaY < 0) {
                     skipCircle('up');
                 };
+                clickAviable = false;
             });
 
             let currentCameraAngle = 0;
