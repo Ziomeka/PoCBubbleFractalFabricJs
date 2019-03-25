@@ -27,9 +27,8 @@
             CHILD_CIRCLE_RADIUS = 75
             CHILD_CIRCLE_POSITION_RADIUS = 1150,
             CHILDREN_DISTANCE_IN_ANGLE = 10,
-            CHILDREN_START_POSITION_ANGLE = -10,
+            CHILDREN_START_POSITION_ANGLE = 0,
             GAP_HEIGHT = 50,
-            PAGE_HEIGHT_PER_CHILD = 2 * CHILD_CIRCLE_RADIUS + GAP_HEIGHT,
             FONT_SIZE = 20,
             MAX_CHILD_NUMBER = 64;
 
@@ -124,8 +123,6 @@
             }
 
             const setScene = (element) => {
-                let pageWidth = `${PAGE_HEIGHT_PER_CHILD * element.children.length + 2 * GAP_HEIGHT}px`
-                document.querySelector('body').style.height = pageWidth;
                 addActiveElement(element);
                 element.children.forEach((child, index) => {
                     addChildElement(data[child], index);
@@ -150,24 +147,8 @@
                 }
             });
 
-            let moveOnScroll = () => {
-                let scrollPosition = window.scrollY || document.documentElement.scrollTop;
-                currentCameraAngle = -scrollPosition / (PAGE_HEIGHT_PER_CHILD / CHILDREN_DISTANCE_IN_ANGLE);
-                childElements.forEach((child, index) => {
-                    let posiition = fromSphericToCartesian(CHILD_CIRCLE_POSITION_RADIUS, childrensStartPositions[index].angle + currentCameraAngle, ACTIVE_CIRCLE_OFFSET_X, 0);
-                    child.left = posiition.x;
-                    child.top = height/2 + posiition.y;
-                    if (child.top < height) child.scale(1);
-                });
-                canvas.renderAll();
-            }
-
-            let skipCircle = (direction) => {
-                if (direction ==='up') {
-                    currentCameraAngle = currentCameraAngle - CHILDREN_DISTANCE_IN_ANGLE;
-                } else if (direction ==='down') {
-                    currentCameraAngle = currentCameraAngle + CHILDREN_DISTANCE_IN_ANGLE;
-                };
+            let slowScrollCircles = (angle) => {
+                currentCameraAngle = currentCameraAngle + angle;
                 childElements.forEach((child, index) => {
                     let posiition = fromSphericToCartesian(CHILD_CIRCLE_POSITION_RADIUS, childrensStartPositions[index].angle + currentCameraAngle, ACTIVE_CIRCLE_OFFSET_X, 0);
                     child.left = posiition.x;
@@ -180,18 +161,14 @@
             const touchMe = document.querySelector('body');
             let hammertime = new Hammer(touchMe);
             hammertime.get('pan').set({ direction: Hammer.DIRECTION_VERTICAL, threshold: 50 });
-            hammertime.on('panend', function(ev) {
-                if (ev.deltaY > 0) {
-                    skipCircle('down');
-                } else if (ev.deltaY < 0) {
-                    skipCircle('up');
-                };
+            hammertime.on('pan', (e) => {
+                let angleDistance = Math.asin(e.deltaY/CHILD_CIRCLE_POSITION_RADIUS);
+                slowScrollCircles(angleDistance);
                 clickAviable = false;
-            });
+            })
 
             let currentCameraAngle = 0;
             setScene(data[0]);
-            // window.addEventListener('scroll', moveOnScroll);
         });
     </script>
 </body>
