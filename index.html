@@ -41,9 +41,11 @@
                 },
             };
 
-            const ACTIVE_CIRCLE_RADIUS = 1000,
-            ACTIVE_CIRCLE_OFFSET_X = -900;
-            ACTIVE_CIRCLE_TEXT_WIDTH = 400;
+            const activeCircleConfig = {
+                circleRadius: 1000,
+                positionCenterX: -900,
+                positionCenterY: 0,
+            }
 
             const fromSphericToCartesian = (radius, angle, offsetX, offsetY) => {
                 let theta = angle * Math.PI / 180;
@@ -82,10 +84,10 @@
 
             const addActiveElement = (element) => {
                 let activeCircle = new fabric.Circle({
-                    radius: ACTIVE_CIRCLE_RADIUS,
+                    radius: activeCircleConfig.circleRadius,
                     fill: element.color,
-                    left: ACTIVE_CIRCLE_OFFSET_X,
-                    top: height / 2,
+                    left: activeCircleConfig.positionCenterX,
+                    top: activeCircleConfig.positionCenterY + height / 2,
                     originX: 'center',
                     originY: 'center',
                     hasControls: false,
@@ -154,7 +156,7 @@
             let slowScrollCircles = (angle) => {
                 currentCameraAngle = currentCameraAngle + angle;
                 childElements.forEach((child, index) => {
-                    let posiition = fromSphericToCartesian(childCirlesConfig.positionRadius, childrensStartPositions[index].angle + currentCameraAngle, ACTIVE_CIRCLE_OFFSET_X, 0);
+                    let posiition = fromSphericToCartesian(childCirlesConfig.positionRadius, childrensStartPositions[index].angle + currentCameraAngle, childCirlesConfig.positionCenterX, childCirlesConfig.positionCenterY);
                     child.left = posiition.x;
                     child.top = height/2 + posiition.y;
                     if (child.top < height) child.scale(1);
