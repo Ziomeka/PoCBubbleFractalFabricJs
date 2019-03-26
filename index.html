@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Fabric.js - Bubles</title>
+    <title>Fabric.js - Bubbles</title>
     <style>
         html, body {width: 100%; height: 100%; margin: 0;}
         .bubbles {width: 100vw; height: 100vh}
@@ -21,16 +21,29 @@
 
     <script>
         document.addEventListener('DOMContentLoaded',function(){
+            const childCirlesConfig = {
+                quantityLimit: 64,
+                circleRadius: 75,
+                positionRadius: 1150,
+                positionCenterX: -900,
+                positionCenterY: 0,
+                gapInDegrees: 10,
+                offsetInDegrees: 0,
+                fontSize: 20,
+                generateStartPositions: function() {
+                    let positionsArray = [];
+                    let angle = 0;
+                    for (let i = 0; i < this.quantityLimit; i++) {
+                        angle = (i * this.gapInDegrees) + this.offsetInDegrees;
+                        positionsArray.push(fromSphericToCartesian(this.positionRadius, angle, this.positionCenterX, this.positionCenterY));
+                    }
+                    return positionsArray;
+                },
+            };
+
             const ACTIVE_CIRCLE_RADIUS = 1000,
             ACTIVE_CIRCLE_OFFSET_X = -900;
-            ACTIVE_CIRCLE_TEXT_WIDTH = 400,
-            CHILD_CIRCLE_RADIUS = 75
-            CHILD_CIRCLE_POSITION_RADIUS = 1150,
-            CHILDREN_DISTANCE_IN_ANGLE = 10,
-            CHILDREN_START_POSITION_ANGLE = 0,
-            GAP_HEIGHT = 50,
-            FONT_SIZE = 20,
-            MAX_CHILD_NUMBER = 64;
+            ACTIVE_CIRCLE_TEXT_WIDTH = 400;
 
             const fromSphericToCartesian = (radius, angle, offsetX, offsetY) => {
                 let theta = angle * Math.PI / 180;
@@ -41,16 +54,7 @@
                 }
             }
 
-            const generateStartPositions = (numberOfPositions, positionRadius, angleStep, angleOffset, offsetX, offsetY) => {
-                let positionsArray = [];
-                for (i = 0; i < numberOfPositions; i++) {
-                    angle = (i * angleStep) + angleOffset;
-                    positionsArray.push(fromSphericToCartesian(positionRadius, angle, offsetX, offsetY));
-                }
-                return positionsArray;
-            }
-
-            const childrensStartPositions = generateStartPositions(MAX_CHILD_NUMBER, CHILD_CIRCLE_POSITION_RADIUS, CHILDREN_DISTANCE_IN_ANGLE, CHILDREN_START_POSITION_ANGLE, ACTIVE_CIRCLE_OFFSET_X, 0);
+            const childrensStartPositions = childCirlesConfig.generateStartPositions();
 
             const width = window.innerWidth,
             height = window.innerHeight;
@@ -96,13 +100,13 @@
             let childElements = [];
             const addChildElement = (element, index) => {
                 let childCircle = new fabric.Circle({
-                    radius: CHILD_CIRCLE_RADIUS,
+                    radius: childCirlesConfig.circleRadius,
                     fill: element.color,
                     originX: 'center',
                     originY: 'center',
                 });
                 let childText = new fabric.Text(element.text, {
-                    fontSize: FONT_SIZE,
+                    fontSize: childCirlesConfig.fontSize,
                     textAlign: 'center',
                     originX: 'center',
                     originY: 'center'
@@ -150,7 +154,7 @@
             let slowScrollCircles = (angle) => {
                 currentCameraAngle = currentCameraAngle + angle;
                 childElements.forEach((child, index) => {
-                    let posiition = fromSphericToCartesian(CHILD_CIRCLE_POSITION_RADIUS, childrensStartPositions[index].angle + currentCameraAngle, ACTIVE_CIRCLE_OFFSET_X, 0);
+                    let posiition = fromSphericToCartesian(childCirlesConfig.positionRadius, childrensStartPositions[index].angle + currentCameraAngle, ACTIVE_CIRCLE_OFFSET_X, 0);
                     child.left = posiition.x;
                     child.top = height/2 + posiition.y;
                     if (child.top < height) child.scale(1);
@@ -162,10 +166,10 @@
             let touchActions = new Hammer(touchActionsSurface);
             touchActions.get('pan').set({ direction: Hammer.DIRECTION_VERTICAL, threshold: 50 });
             touchActions.on('pan', (e) => {
-                let angleDistance = Math.asin(e.deltaY/CHILD_CIRCLE_POSITION_RADIUS);
+                let angleDistance = Math.asin(e.deltaY/childCirlesConfig.positionRadius);
                 slowScrollCircles(angleDistance);
                 clickAviable = false;
-            })
+            });
 
             let currentCameraAngle = 0;
             setScene(data[0]);
