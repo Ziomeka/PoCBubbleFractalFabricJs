@@ -21,6 +21,16 @@
 
     <script>
         document.addEventListener('DOMContentLoaded',function(){
+
+            const fromSphericToCartesian = (radius, angle, offsetX, offsetY) => {
+                let theta = angle * Math.PI / 180;
+                return {
+                    x: radius * Math.cos(theta) + offsetX,
+                    y: radius * Math.sin(theta) + offsetY,
+                    angle: angle
+                }
+            };
+
             const childCirlesConfig = {
                 quantityLimit: 64,
                 circleRadius: 75,
@@ -45,49 +55,41 @@
                 circleRadius: 1000,
                 positionCenterX: -900,
                 positionCenterY: 0,
-            }
+            };
 
-            const fromSphericToCartesian = (radius, angle, offsetX, offsetY) => {
-                let theta = angle * Math.PI / 180;
-                return {
-                    x: radius * Math.cos(theta) + offsetX,
-                    y: radius * Math.sin(theta) + offsetY,
-                    angle: angle
-                }
-            }
-
-            const childrensStartPositions = childCirlesConfig.generateStartPositions();
-
-            const width = window.innerWidth,
-            height = window.innerHeight;
-
-            let curentElement = 0;
+            let viewState = {
+                width: window.innerWidth,
+                height: window.innerHeight,
+                childrensStartPositions: childCirlesConfig.generateStartPositions(),
+                curentElement: 0,
+                setCurrentElement: function(index) {
+                    if (index !== this.curentElement) {
+                        this.curentElement = index;
+                    } else if (this.curentElement !== 0){
+                        this.curentElement = data[this.curentElement].parent;
+                    } else {
+                        this.curentElement = 0;
+                    }
+                },
+                clickAviable: true,
+                currentCameraAngle: 0,
+            };
 
             let canvas = new fabric.Canvas('c', {
-                width: width,
-                height: height,
+                width: viewState.width,
+                height: viewState.height,
                 backgroundColor: '#fff',
                 allowTouchScrolling: false,
                 selection: false,
                 controlsAboveOverlay: true,
             });
 
-            const setCurrentElement = (index) => {
-                if (index !== curentElement) {
-                    curentElement = index;
-                } else if (curentElement !== 0){
-                    curentElement = data[curentElement].parent;
-                } else {
-                    curentElement = 0;
-                }
-            }
-
             const addActiveElement = (element) => {
                 let activeCircle = new fabric.Circle({
                     radius: activeCircleConfig.circleRadius,
                     fill: element.color,
                     left: activeCircleConfig.positionCenterX,
-                    top: activeCircleConfig.positionCenterY + height / 2,
+                    top: activeCircleConfig.positionCenterY + viewState.height / 2,
                     originX: 'center',
                     originY: 'center',
                     hasControls: false,
@@ -120,8 +122,8 @@
                     hasBorders: false,
                     lockMovementX: true,
                     lockMovementY: true,
-                    left: childrensStartPositions[index].x,
-                    top: height / 2 + childrensStartPositions[index].y,
+                    left: viewState.childrensStartPositions[index].x,
+                    top: viewState.height / 2 + viewState.childrensStartPositions[index].y,
                     id: element.id
                 });
                 canvas.add(childElement);
@@ -137,29 +139,28 @@
             };
 
             const redraw = () => {
-                window.scrollTo(0, 0);
                 canvas.clear();
                 childElements = [];
-                setScene(data[curentElement]);
+                viewState.currentCameraAngle = 0;
+                setScene(data[viewState.curentElement]);
             }
 
-            let clickAviable = true;
             canvas.on('mouse:up', function(e) {
-                if (clickAviable) {
-                    setCurrentElement(e.target.id);
+                if (viewState.clickAviable) {
+                    viewState.setCurrentElement(e.target.id);
                     redraw();
                 } else {
-                    clickAviable = true;
+                    viewState.clickAviable = true;
                 }
             });
 
             let slowScrollCircles = (angle) => {
-                currentCameraAngle = currentCameraAngle + angle;
+                viewState.currentCameraAngle = viewState.currentCameraAngle + angle;
                 childElements.forEach((child, index) => {
-                    let posiition = fromSphericToCartesian(childCirlesConfig.positionRadius, childrensStartPositions[index].angle + currentCameraAngle, childCirlesConfig.positionCenterX, childCirlesConfig.positionCenterY);
+                    let posiition = fromSphericToCartesian(childCirlesConfig.positionRadius, viewState.childrensStartPositions[index].angle + viewState.currentCameraAngle, childCirlesConfig.positionCenterX, childCirlesConfig.positionCenterY);
                     child.left = posiition.x;
-                    child.top = height/2 + posiition.y;
-                    if (child.top < height) child.scale(1);
+                    child.top = viewState.height/2 + posiition.y;
+                    if (child.top < viewState.height) child.scale(1);
                 });
                 canvas.renderAll();
             }
@@ -170,10 +171,9 @@
             touchActions.on('pan', (e) => {
                 let angleDistance = Math.asin(e.deltaY/childCirlesConfig.positionRadius);
                 slowScrollCircles(angleDistance);
-                clickAviable = false;
+                viewState.clickAviable = false;
             });
 
-            let currentCameraAngle = 0;
             setScene(data[0]);
         });
     </script>
