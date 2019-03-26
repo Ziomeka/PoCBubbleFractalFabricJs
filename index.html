@@ -7,12 +7,12 @@
     <title>Fabric.js - Bubles</title>
     <style>
         html, body {width: 100%; height: 100%; margin: 0;}
-        .page {position: fixed; top: 0; left: 0; width: 100vw; height: 100vh}
+        .bubbles {width: 100vw; height: 100vh}
     </style>
 </head>
 
 <body>
-    <div class="page">
+    <div class="bubbles">
         <canvas id='c'></canvas>
     </div>
     <script src="js/fabric.min.js"></script>
@@ -62,7 +62,7 @@
                 height: height,
                 backgroundColor: '#fff',
                 allowTouchScrolling: false,
-                selection: true,
+                selection: false,
                 controlsAboveOverlay: true,
             });
 
@@ -158,10 +158,10 @@
                 canvas.renderAll();
             }
 
-            const touchMe = document.querySelector('body');
-            let hammertime = new Hammer(touchMe);
-            hammertime.get('pan').set({ direction: Hammer.DIRECTION_VERTICAL, threshold: 50 });
-            hammertime.on('pan', (e) => {
+            const touchActionsSurface = document.querySelector('.bubbles');
+            let touchActions = new Hammer(touchActionsSurface);
+            touchActions.get('pan').set({ direction: Hammer.DIRECTION_VERTICAL, threshold: 50 });
+            touchActions.on('pan', (e) => {
                 let angleDistance = Math.asin(e.deltaY/CHILD_CIRCLE_POSITION_RADIUS);
                 slowScrollCircles(angleDistance);
                 clickAviable = false;
