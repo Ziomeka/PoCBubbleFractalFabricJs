@@ -104,7 +104,17 @@
                     left: - activeCircleConfig.positionCenterX + 50,
                     angle: -90,
                 });
-                let activeElement = new fabric.Group([activeCircle, activeText], {
+                let activeTriangle = new fabric.Polygon(
+                    [
+                    {x: activeCircleConfig.circleRadius - 10, y: 20},
+                    {x: activeCircleConfig.circleRadius - 10, y: -20},
+                    {x: activeCircleConfig.circleRadius + 20, y: 0},
+                    ],
+                    {
+                    fill: element.color,
+                    }
+                );
+                let activeElement = new fabric.Group([activeCircle, activeText, activeTriangle], {
                     left: activeCircleConfig.positionCenterX,
                     top: activeCircleConfig.positionCenterY + viewState.height / 2,
                     originX: 'center',
