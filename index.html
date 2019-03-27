@@ -20,6 +20,7 @@
     <script src="js/data.js"></script>
 
     <script>
+        fabric.devicePixelRatio = 2;
         document.addEventListener('DOMContentLoaded',function(){
 
             const fromSphericToCartesian = (radius, angle, offsetX, offsetY) => {
@@ -55,6 +56,7 @@
                 circleRadius: 1000,
                 positionCenterX: -900,
                 positionCenterY: 0,
+                fontSize: 30,
             };
 
             let viewState = {
@@ -91,6 +93,18 @@
                 let activeCircle = new fabric.Circle({
                     radius: activeCircleConfig.circleRadius,
                     fill: element.color,
+                    originX: 'center',
+                    originY: 'center',
+                });
+                let activeText = new fabric.Text(element.text, {
+                    fontSize: activeCircleConfig.fontSize,
+                    textAlign: 'center',
+                    originX: 'center',
+                    originY: 'center',
+                    left: - activeCircleConfig.positionCenterX + 50,
+                    angle: -90,
+                });
+                let activeElement = new fabric.Group([activeCircle, activeText], {
                     left: activeCircleConfig.positionCenterX,
                     top: activeCircleConfig.positionCenterY + viewState.height / 2,
                     originX: 'center',
@@ -101,7 +115,7 @@
                     lockMovementY: true,
                     id: element.id
                 });
-                canvas.add(activeCircle);
+                canvas.add(activeElement);
             }
 
             let childElements = [];
