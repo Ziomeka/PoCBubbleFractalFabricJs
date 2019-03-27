@@ -32,7 +32,7 @@
             };
 
             const childCirlesConfig = {
-                quantityLimit: 64,
+                quantityLimit: 36,
                 circleRadius: 75,
                 positionRadius: 1150,
                 positionCenterX: -900,
@@ -73,6 +73,9 @@
                 },
                 clickAviable: true,
                 currentCameraAngle: 0,
+                fixCurrentCameraAngle: function () {
+                    this.currentCameraAngle = Math.round(this.currentCameraAngle / childCirlesConfig.gapInDegrees) * childCirlesConfig.gapInDegrees;
+                },
             };
 
             let canvas = new fabric.Canvas('c', {
@@ -146,7 +149,7 @@
             }
 
             canvas.on('mouse:up', function(e) {
-                if (viewState.clickAviable) {
+                if (viewState.clickAviable && e.target) {
                     viewState.setCurrentElement(e.target.id);
                     redraw();
                 } else {
@@ -154,15 +157,19 @@
                 }
             });
 
-            let slowScrollCircles = (angle) => {
-                viewState.currentCameraAngle = viewState.currentCameraAngle + angle;
+            const goToAnglePosition = (angle) => {
                 childElements.forEach((child, index) => {
-                    let posiition = fromSphericToCartesian(childCirlesConfig.positionRadius, viewState.childrensStartPositions[index].angle + viewState.currentCameraAngle, childCirlesConfig.positionCenterX, childCirlesConfig.positionCenterY);
+                    let posiition = fromSphericToCartesian(childCirlesConfig.positionRadius, viewState.childrensStartPositions[index].angle + angle, childCirlesConfig.positionCenterX, childCirlesConfig.positionCenterY);
                     child.left = posiition.x;
                     child.top = viewState.height/2 + posiition.y;
                     if (child.top < viewState.height) child.scale(1);
                 });
                 canvas.renderAll();
+            }
+
+            const slowScrollCircles = (angle) => {
+                viewState.currentCameraAngle = viewState.currentCameraAngle + angle;
+                goToAnglePosition(viewState.currentCameraAngle);
             }
 
             const touchActionsSurface = document.querySelector('.bubbles');
@@ -173,6 +180,11 @@
                 slowScrollCircles(angleDistance);
                 viewState.clickAviable = false;
             });
+            touchActions.on('panend', (e) => {
+                viewState.fixCurrentCameraAngle();
+                goToAnglePosition(viewState.currentCameraAngle);
+            });
+
 
             setScene(data[0]);
         });
