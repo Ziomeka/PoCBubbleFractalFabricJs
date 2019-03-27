@@ -123,6 +123,7 @@
                     hasBorders: false,
                     lockMovementX: true,
                     lockMovementY: true,
+                    hoverCursor: 'pointer',
                     id: element.id
                 });
                 canvas.add(activeElement);
@@ -151,6 +152,7 @@
                     lockMovementY: true,
                     left: viewState.childrensStartPositions[index].x,
                     top: viewState.height / 2 + viewState.childrensStartPositions[index].y,
+                    hoverCursor: 'pointer',
                     id: element.id
                 });
                 canvas.add(childElement);
@@ -208,7 +210,6 @@
                 viewState.fixCurrentCameraAngle();
                 goToAnglePosition(viewState.currentCameraAngle);
             });
-
 
             setScene(data[0]);
         });
