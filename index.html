@@ -32,6 +32,10 @@
                 }
             };
 
+            const simpleEasingFunction = (elapsedTime, startPosition, distance, duration) => {
+                return distance * elapsedTime / duration + startPosition;
+            }
+
             const childCirlesConfig = {
                 quantityLimit: 36,
                 circleRadius: 75,
