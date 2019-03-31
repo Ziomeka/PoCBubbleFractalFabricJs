@@ -80,7 +80,7 @@
                 clickAviable: true,
                 currentCameraAngle: 0,
                 fixCurrentCameraAngle: function () {
-                    this.currentCameraAngle = Math.round(this.currentCameraAngle / childCirlesConfig.gapInDegrees) * childCirlesConfig.gapInDegrees;
+                    return Math.round(this.currentCameraAngle / childCirlesConfig.gapInDegrees) * childCirlesConfig.gapInDegrees;
                 },
             };
 
@@ -197,6 +197,24 @@
                 canvas.renderAll();
             }
 
+            const animateToAnglePosition = (angle) => {
+                const duration = 800;
+                const startPosition = viewState.currentCameraAngle;
+                let startTime = null;
+                const animate = (currentTime) => {
+                    if (startTime === null) {
+                        startTime = currentTime;
+                    }
+                    const timeElapsed = currentTime - startTime;
+                    const step = simpleEasingFunction(timeElapsed, startPosition, angle, duration);
+                    goToAnglePosition(step);
+                    if (timeElapsed < duration) {
+                        requestAnimationFrame(animate);
+                    }
+                };
+                requestAnimationFrame(animate);
+            }
+
             const slowScrollCircles = (angle) => {
                 viewState.currentCameraAngle = viewState.currentCameraAngle + angle;
                 goToAnglePosition(viewState.currentCameraAngle);
@@ -211,8 +229,7 @@
                 viewState.clickAviable = false;
             });
             touchActions.on('panend', (e) => {
-                viewState.fixCurrentCameraAngle();
-                goToAnglePosition(viewState.currentCameraAngle);
+                animateToAnglePosition(viewState.fixCurrentCameraAngle());
             });
 
             setScene(data[0]);
