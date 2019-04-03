@@ -197,16 +197,17 @@
                 canvas.renderAll();
             }
 
-            const animateToAnglePosition = (angle) => {
-                const duration = 800;
+            const animateToAnglePosition = (targetAngle) => {
+                const duration = 100;
                 const startPosition = viewState.currentCameraAngle;
+                const angleDistance = targetAngle - viewState.currentCameraAngle;
                 let startTime = null;
                 const animate = (currentTime) => {
                     if (startTime === null) {
                         startTime = currentTime;
                     }
                     const timeElapsed = currentTime - startTime;
-                    const step = simpleEasingFunction(timeElapsed, startPosition, angle, duration);
+                    const step = simpleEasingFunction(timeElapsed, startPosition, angleDistance, duration);
                     goToAnglePosition(step);
                     if (timeElapsed < duration) {
                         requestAnimationFrame(animate);
